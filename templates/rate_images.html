@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="image-container">
+    {% for image in images %}
+    <div class="image" data-url="{{ image.url }}" data-name="{{ image.name }}">
+        <img src="{{ image.url }}">
+    </div>
+    {% endfor %}
+</div>
+
+<div id="message-container"></div>
+
+<script>
+    var currentImageIndex = 0;
+    var images = document.querySelectorAll('.image');
+    var messageContainer = document.getElementById('message-container');
+    var imageContainer = document.getElementById('image-container');
+    
+    function showNextImage() {
+        if (currentImageIndex >= images.length) {
+            // User has rated all images
+            messageContainer.innerText = "Thank you for rating all the images!";
+            return;
+        }
+        
+        // Show the next image
+        var image = images[currentImageIndex];
+        var url = image.getAttribute('data-url');
+        var name = image.getAttribute('data-name');
+        imageContainer.innerHTML = '<img src="' + url + '">';
+
+        // Increment the image index
+        currentImageIndex++;
+        
+        // Reset the message container
+        messageContainer.innerText = '';
+        
+        // Set a timeout to show the next image after 5 seconds
+        setTimeout(showNextImage, 5000);
+    }
+    
+    function handleSwipe(direction) {
+        var image = images[currentImageIndex - 1];
+        var name = image.getAttribute('data-name');
+        
+        if (direction === 'left') {
+            messageContainer.innerText = "You rejected image " + name;
+        } else {
+            messageContainer.innerText = "You selected image " + name;
+        }
+        
+        // Set a timeout to show the next image after 1 second
+        setTimeout(showNextImage, 1000);
+    }
+    
+    // Listen for swipes on the image container
+    var swipeContainer = new Hammer(imageContainer);
+    swipeContainer.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
+    swipeContainer.on('swipeleft', function() {
+        handleSwipe('left');
+    });
+    swipeContainer.on('swiperight', function() {
+        handleSwipe('right');
+    });
+    
+    // Show the first image
+    showNextImage();
+</script>
+{% endblock %}
